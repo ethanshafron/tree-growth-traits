@@ -1,0 +1,21 @@
+segmentation:
+  marker_min: 5
+  marker_max: 10
+  
+  min_polygon_size: 49
+  max_polygon_size: 900
+
+  compactness: 0.2
+
+  local_filter: "median"
+  kernel_size: 5
+
+sites: ["SJER", "TEAK"]
+first_year: 2013
+last_year: 2021
+
+mosaic_suffix: "_mosaic.tif"
+sample: 100
+
+seed: 12398129391
+
