@@ -77,7 +77,7 @@ def get_persistent_site_crowns(site, cfg):
 def run_segmentation_on_all_sites(cfg):
     for site in cfg["sites"]:
         site_crowns = get_persistent_site_crowns(site, cfg)
-        site_crowns.to_file("data/crowns/{}_crowns.geojson".format(site))
+        site_crowns.to_file("data/crowns/{}_{}_crowns.geojson".format(cfg["experiment"], site))
 
 def main():
     parser = argparse.ArgumentParser()
