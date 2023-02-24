@@ -10,6 +10,7 @@ segmentation:
   local_filter: "median"
   kernel_size: 5
 
+
 sites: ["SJER", "TEAK"]
 first_year: 2013
 last_year: 2021
@@ -17,5 +18,9 @@ last_year: 2021
 mosaic_suffix: "_mosaic.tif"
 sample: 100
 
-seed: 71128
 
+trait_fields: "{trait}_{date}"
+chm_fields: "chm_{year}"
+
+seed: 71128
+experiment: "first_pass"
