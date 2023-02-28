@@ -120,29 +120,26 @@ def extract_px_values_to_points(file, data, field):
     ds.close()
     return data
 
-cfg = yaml.safe_load(open("Desktop/thesis/configs/exp_20230222.yaml", "r"))
-extracted_data = []
 
+if __name__ == "__main__":
+    cfg = yaml.safe_load(open("Desktop/thesis/configs/exp_20230222.yaml", "r"))
+    extracted_data = []
 
+    for site in cfg["sites"]:
+        files = [i for i in glob("Desktop/thesis/data/neon/{}*{}".format(site, cfg["mosaic_suffix"])) if any(xs in i for xs in cfg["sites"])]
+        fields = [cfg["chm_fields"].format(year = re.findall( "_([^_]+)_", i)[0]) for i in files]
+        f = f"~/Desktop/thesis/data/crowns/first_pass_{site}_crowns.geojson"
+        data = polys_to_points(f, 1)
+        for file, field in zip(files, fields):
+            data = extract_px_values_to_points(file, data, field)
+        data["site"] = site
+        extracted_data.append(data)
 
-
-
-
-for site in cfg["sites"]:
-    files = [i for i in glob("Desktop/thesis/data/neon/{}*{}".format(site, cfg["mosaic_suffix"])) if any(xs in i for xs in cfg["sites"])]
-    fields = [cfg["chm_fields"].format(year = re.findall( "_([^_]+)_", i)[0]) for i in files]
-    f = f"~/Desktop/thesis/data/crowns/first_pass_{site}_crowns.geojson"
-    data = polys_to_points(f, 1)
-    for file, field in zip(files, fields):
-        data = extract_px_values_to_points(file, data, field)
-    data["site"] = site
-    extracted_data.append(data)
-
-    
-    make_plots(data, site)
-out = pd.concat(extracted_data, axis = 0)
-out.crs = data.crs
-out.to_file("Desktop/thesis/data/crowns/{}_{}_crowns.geojson".format(cfg["sites"][0], cfg["sites"][1]))
+        
+        make_plots(data, site)
+    out = pd.concat(extracted_data, axis = 0)
+    out.crs = data.crs
+    out.to_file("Desktop/thesis/data/crowns/{}_{}_crowns.geojson".format(cfg["sites"][0], cfg["sites"][1]))
 
 
 
