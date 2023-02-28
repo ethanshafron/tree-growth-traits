@@ -87,8 +87,46 @@ def make_plots(data, site):
     plt.xlabel("Mean crown-level height, 2013")
     plt.ylabel("Mean crown-level height, 2021")
     plt.savefig("Desktop/thesis/figures/{}_height_diff_2013_2021.png".format(site), dpi = 400)
+    
+    plt.clf()
+    fig, ax = plt.subplots()
+    
+    #ax.scatter(gb1, gb2, label = "2017")
+    m, b = np.polyfit(gb1, gb2, 1)
+    ax.plot(gb1, gb1*m+b, label = "2017")
+    
+    #ax.scatter(gb1, gb3, label = "2018")
+    m, b = np.polyfit(gb1, gb3, 1)
+    ax.plot(gb1, gb1*m+b, label = "2018")
+    
+    #ax.scatter(gb1, gb4, label = "2019")
+    m, b = np.polyfit(gb1, gb4, 1)
+    ax.plot(gb1, gb1*m+b, label = "2019")
+    
+    #ax.scatter(gb1, gb5, label = "2021")
+    m, b = np.polyfit(gb1, gb5, 1)
+    ax.plot(gb1, gb1*m+b, label = "2021")
+    
+    ax.legend()
+    plt.xlabel("Mean crown-level height, 2013")
+    plt.ylabel("Mean crown-level height")
+    plt.savefig("Desktop/thesis/figures/{}_height_diff_2013_allyears.png".format(site), dpi = 400)
+
+def extract_px_values_to_points(file, data, field):
+    xy_pairs = list(zip(data["geometry"].x.tolist(), data["geometry"].y.tolist()))
+    ds = rio.open(file)
+    samples = [i[0] for i in ds.sample(xy_pairs, 1)]
+    data[field] = samples
+    ds.close()
+    return data
 
 cfg = yaml.safe_load(open("Desktop/thesis/configs/exp_20230222.yaml", "r"))
+extracted_data = []
+
+
+
+
+
 
 for site in cfg["sites"]:
     files = [i for i in glob("Desktop/thesis/data/neon/{}*{}".format(site, cfg["mosaic_suffix"])) if any(xs in i for xs in cfg["sites"])]
@@ -96,16 +134,15 @@ for site in cfg["sites"]:
     f = f"~/Desktop/thesis/data/crowns/first_pass_{site}_crowns.geojson"
     data = polys_to_points(f, 1)
     for file, field in zip(files, fields):
-        xy_pairs = list(zip(data["geometry"].x.tolist(), data["geometry"].y.tolist()))
-        ds = rio.open(file)
-        samples = [i[0] for i in ds.sample(xy_pairs, 1)]
-        data[field] = samples
-        ds.close()
+        data = extract_px_values_to_points(file, data, field)
+    data["site"] = site
+    extracted_data.append(data)
 
     
     make_plots(data, site)
-
-
+out = pd.concat(extracted_data, axis = 0)
+out.crs = data.crs
+out.to_file("Desktop/thesis/data/crowns/{}_{}_crowns.geojson".format(cfg["sites"][0], cfg["sites"][1]))
 
 
 
