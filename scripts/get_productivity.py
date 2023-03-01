@@ -17,7 +17,7 @@ f = args.crowns
 crowns = gpd.read_file(f)
 crowns_wgs = crowns.to_crs(epsg = 4326)
 bbox_of_interest = crowns_wgs.total_bounds
-time_of_interest = "2013-06-01/2021-06-01"
+time_of_interest = "2012-06-01/2021-06-01"
 catalog = pystac_client.Client.open(
     "https://planetarycomputer.microsoft.com/api/stac/v1",
     modifier=planetary_computer.sign_inplace,
