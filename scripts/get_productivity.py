@@ -22,29 +22,36 @@ catalog = pystac_client.Client.open(
     "https://planetarycomputer.microsoft.com/api/stac/v1",
     modifier=planetary_computer.sign_inplace,
 )
-
 search = catalog.search(
-    collections=["landsat-c2-l2"],
+    collections=["modis-17A2H-061"],
     bbox=bbox_of_interest,
-    datetime=time_of_interest,
-    query={"eo:cloud_cover": {"lt": 10}, "platform": {"in": ["landsat-8", "landsat-9"]},},
-)
+    datetime=time_of_interest)
+
+
+#search = catalog.search(
+#    collections=["landsat-c2-l2"],
+#    bbox=bbox_of_interest,
+#    datetime=time_of_interest,
+#    query={"eo:cloud_cover": {"lt": 10}, "platform": {"in": ["landsat-8", "landsat-9"]},},
+#)
 site = args.site
 items = search.item_collection()
 print(f"Returned {len(items)} Items")
 for item in items:
-    bands_of_interest = ["red", "nir08"]
+    bands_of_interest = ["Gpp_500m"]
     data = odc.stac.stac_load(
         [item], bands=bands_of_interest, bbox=bbox_of_interest
     ).isel(time=0)
 
-    red = data["red"].astype("float")
-    nir = data["nir08"].astype("float")
-    sigma = 0.5
-    kndvi = np.tanh(((nir-red)/(red+nir))**2)
-    t = kndvi["time"]
+    #red = data["red"].astype("float")
+    #nir = data["nir08"].astype("float")
+    #sigma = 0.5
+    #kndvi = np.tanh(((nir-red)/(red+nir))**2)
+    
+    #t = kndvi["time"]
+    t = data["Gpp_500m"].astype("float")["time"]
     date = t.to_dict()["data"].strftime("%Y-%m-%d").replace("-", "")
-    kndvi.rio.to_raster(f"data/productivity/{site}_{date}_kndvi.tif")
+    kndvi.rio.to_raster(f"data/productivity/{site}_{date}_MOD17.tif")
 
 
 
