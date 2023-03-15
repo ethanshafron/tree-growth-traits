@@ -49,10 +49,10 @@ for bbox_of_interest, identity in zip(bboxes, ids):
         data = odc.stac.stac_load(
             [item], bands=bands_of_interest, bbox=bbox_of_interest).isel(time=0)
 
-        red = data["red"].astype("float")
-        nir = data["nir08"].astype("float")
-        blue = data["blue"].astype("float")
-        green = data["green"].astype("float")
+        red = data["red"].astype("float").flatten()
+        nir = data["nir08"].astype("float").flatten()
+        blue = data["blue"].astype("float").flatten()
+        green = data["green"].astype("float").flatten()
         #kndvi = np.tanh(((nir-red)/(red+nir))**2)
         
         t = ndvi["time"]
