@@ -7,12 +7,10 @@ from pystac.extensions.eo import EOExtension as eo
 import geopandas as gpd
 import rioxarray
 import argparse
-
 parser = argparse.ArgumentParser()
 parser.add_argument("--crowns")
 parser.add_argument("--site")
 args = parser.parse_args()
-
 f = args.crowns
 crowns = gpd.read_file(f)
 crowns_wgs = crowns.to_crs(epsg = 4326)
@@ -22,37 +20,41 @@ catalog = pystac_client.Client.open(
     "https://planetarycomputer.microsoft.com/api/stac/v1",
     modifier=planetary_computer.sign_inplace,
 )
-search = catalog.search(
-    collections=["modis-17A2H-061"],
-    bbox=bbox_of_interest,
-    datetime=time_of_interest)
-
-
 #search = catalog.search(
-#    collections=["landsat-c2-l2"],
+#    collections=["modis-17A2HGF-061"],
 #    bbox=bbox_of_interest,
-#    datetime=time_of_interest,
-#    query={"eo:cloud_cover": {"lt": 10}, "platform": {"in": ["landsat-8", "landsat-9"]},},
-#)
+#    datetime=time_of_interest)
+
+
+search = catalog.search(
+    collections=["landsat-c2-l2"],
+    bbox=bbox_of_interest,
+    datetime=time_of_interest,
+    query={"eo:cloud_cover": {"lt": 10}, "platform": {"in": ["landsat-8", "landsat-9"]},},
+)
 site = args.site
 items = search.item_collection()
 print(f"Returned {len(items)} Items")
 for item in items:
-    bands_of_interest = ["Gpp_500m"]
+    bands_of_interest = ["nir08", "red"]
+    #data = odc.stac.stac_load(
+    #    [item], bands=bands_of_interest, bbox=bbox_of_interest
+    #).isel(time=0)
     data = odc.stac.stac_load(
-        [item], bands=bands_of_interest, bbox=bbox_of_interest
-    ).isel(time=0)
+        [item], bands=bands_of_interest, bbox=bbox_of_interest).isel(time=0)
 
-    #red = data["red"].astype("float")
-    #nir = data["nir08"].astype("float")
-    #sigma = 0.5
+    red = data["red"].astype("float")
+    nir = data["nir08"].astype("float")
+    sigma = 0.5
     #kndvi = np.tanh(((nir-red)/(red+nir))**2)
+    ndvi = ((nir-red)/(red+nir))
     
-    #t = kndvi["time"]
-    t = data["Gpp_500m"].astype("float")["time"]
+    t = ndvi["time"]
+    #gpp = data["Gpp_500m"].astype("float")
+    #t = gpp["time"]
     date = t.to_dict()["data"].strftime("%Y-%m-%d").replace("-", "")
-    kndvi.rio.to_raster(f"data/productivity/{site}_{date}_MOD17.tif")
-
+    #gpp = gpp.rio.to_crs(epsg = 4326)
+    ndvi.rio.to_raster(f"data/productivity/{site}_{date}_ndvi.tif")
 
 
 
